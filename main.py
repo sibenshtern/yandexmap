@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtWidgets import QLabel, QPushButton, QLineEdit
+from PyQt5.QtWidgets import QLabel, QPushButton, QLineEdit, QCheckBox
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 
 from PyQt5.QtGui import QPixmap, QKeyEvent
@@ -19,6 +19,8 @@ class Widget(QWidget):
         self.api = API(coordinates=self.default_coordinates)
         self.map_type = "map"
         self.zoom = 17
+
+        self.show_postal_code = False
 
         self.api.config_by_argument(argument=self.api.COORDINATES_ARG)
         self.init_ui()
@@ -41,6 +43,9 @@ class Widget(QWidget):
         search_address_button = QPushButton('Найти адрес')
         search_address_button.clicked.connect(self.search_address)
 
+        show_postal_code_checkbox = QCheckBox('Показывать индекс')
+        show_postal_code_checkbox.clicked.connect(self.change_show_postal_code)
+
         clear_address_button = QPushButton('Сбросить результат поиска')
         clear_address_button.clicked.connect(self.clear_address)
 
@@ -61,6 +66,7 @@ class Widget(QWidget):
         input_address_layout.addWidget(search_address_button)
 
         address_layout.addLayout(input_address_layout)
+        address_layout.addWidget(show_postal_code_checkbox)
         address_layout.addWidget(clear_address_button)
 
         main_layout.addLayout(address_layout)
@@ -93,6 +99,8 @@ class Widget(QWidget):
 
         if self.api.validate_address(address):
             self.api.set_address(address)
+            self.api.set_address(address)
+
             self.put_image_in_label()
             self.set_address_text()
 
@@ -107,11 +115,23 @@ class Widget(QWidget):
         self.setFocus()
 
     def set_address_text(self):
-        self.address.setText(self.api.return_address())
+        self.address.setText(
+            self.api.return_address(postal_code=self.show_postal_code)
+        )
         self.setFocus()
 
     def clear_address_text(self):
         self.address.setText('')
+        self.setFocus()
+
+    def change_show_postal_code(self):
+        checkbox: QCheckBox = self.sender()  # noqa
+        if checkbox.isChecked():
+            self.show_postal_code = True
+        else:
+            self.show_postal_code = False
+
+        self.set_address_text()
         self.setFocus()
 
     def keyPressEvent(self, event: QKeyEvent):

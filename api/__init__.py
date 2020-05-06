@@ -21,6 +21,7 @@ class API:
             address: Union[None, str] = None
     ):
         self.points = []
+        self.postal_code = None
 
         if coordinates is not None:
             self.coordinates = coordinates
@@ -55,6 +56,8 @@ class API:
         str_coordinates = ','.join(map(str, coordinates))
         toponym = self.get_toponym_by_geocoder(str_coordinates)
 
+        self.postal_code = toponym['metaDataProperty']['GeocoderMetaData'][
+            'Address'].get('postal_code', None)
         address = toponym['metaDataProperty']['GeocoderMetaData']['text']
         return address
 
@@ -79,7 +82,9 @@ class API:
     def return_coordinates(self) -> Tuple[float, ...]:
         return self.coordinates
 
-    def return_address(self) -> str:
+    def return_address(self, postal_code: bool = False) -> str:
+        if postal_code and self.postal_code is not None:
+            return self.address + ', ' + self.postal_code
         return self.address
 
     def get_map(self, map_type, zoom):
@@ -114,6 +119,8 @@ class API:
             toponym_address = toponym['metaDataProperty']['GeocoderMetaData'][
                 'text']
             self.address = toponym_address
+            self.postal_code = toponym['metaDataProperty'][
+                'GeocoderMetaData']['Address'].get('postal_code', None)
         self.coordinates = self.config_by_argument(self.ADDRESS_ARG)
 
         self.clear_points()
