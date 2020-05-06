@@ -109,7 +109,11 @@ class API:
         self.config_by_argument(self.COORDINATES_ARG)
 
     def set_address(self, address: str) -> None:
-        self.address = address
+        if self.validate_address(address):
+            toponym = self.get_toponym_by_geocoder(address)
+            toponym_address = toponym['metaDataProperty']['GeocoderMetaData'][
+                'text']
+            self.address = toponym_address
         self.coordinates = self.config_by_argument(self.ADDRESS_ARG)
 
         self.clear_points()

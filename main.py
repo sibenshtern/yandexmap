@@ -34,6 +34,9 @@ class Widget(QWidget):
         self.api.add_point(Point(self.api.return_coordinates()))
         self.put_image_in_label()
 
+        self.address = QLabel()
+        self.set_address_text()
+
         self.address_input = QLineEdit()
         search_address_button = QPushButton('Найти адрес')
         search_address_button.clicked.connect(self.search_address)
@@ -68,8 +71,10 @@ class Widget(QWidget):
         button_layout.addWidget(hybrid_map_style_button)
 
         main_layout.addLayout(button_layout)
+        main_layout.addWidget(self.address)
 
         self.setLayout(main_layout)
+        self.setMaximumSize(self.sizeHint())
 
     def put_image_in_label(self):
         image = QPixmap()
@@ -89,15 +94,27 @@ class Widget(QWidget):
         if self.api.validate_address(address):
             self.api.set_address(address)
             self.put_image_in_label()
+            self.set_address_text()
 
         self.setFocus()
 
     def clear_address(self):
         self.api.clear_points()
+
         self.put_image_in_label()
+        self.clear_address_text()
+
         self.setFocus()
 
-    def keyPressEvent(self, event):
+    def set_address_text(self):
+        self.address.setText(self.api.return_address())
+        self.setFocus()
+
+    def clear_address_text(self):
+        self.address.setText('')
+        self.setFocus()
+
+    def keyPressEvent(self, event: QKeyEvent):
         pressed_key = event.key()
 
         if pressed_key == Qt.Key_PageUp:
