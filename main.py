@@ -15,7 +15,8 @@ class Widget(QWidget):
     def __init__(self, *args, **kwargs):
         super(Widget, self).__init__(*args, **kwargs)
 
-        self.api = API(coordinates=(40.498011, 52.893913))
+        self.default_coordinates = (40.498011, 52.893913)
+        self.api = API(coordinates=self.default_coordinates)
         self.map_type = "map"
         self.zoom = 17
 
@@ -25,7 +26,8 @@ class Widget(QWidget):
     def init_ui(self):
         main_layout = QVBoxLayout()
         button_layout = QHBoxLayout()
-        address_layout = QHBoxLayout()
+        address_layout = QVBoxLayout()
+        input_address_layout = QHBoxLayout()
 
         self.image = QLabel()
         self.image.setMinimumSize(600, 450)
@@ -33,8 +35,11 @@ class Widget(QWidget):
         self.put_image_in_label()
 
         self.address_input = QLineEdit()
-        search_button = QPushButton('Найти адрес')
-        search_button.clicked.connect(self.search_address)
+        search_address_button = QPushButton('Найти адрес')
+        search_address_button.clicked.connect(self.search_address)
+
+        clear_address_button = QPushButton('Сбросить результат поиска')
+        clear_address_button.clicked.connect(self.clear_address)
 
         scheme_map_style_button = QPushButton('Схема')
         scheme_map_style_button.setObjectName('map')
@@ -48,15 +53,20 @@ class Widget(QWidget):
         hybrid_map_style_button.setObjectName('sat,skl')
         hybrid_map_style_button.clicked.connect(self.set_map_style)
 
+        # Set up layouts
+        input_address_layout.addWidget(self.address_input)
+        input_address_layout.addWidget(search_address_button)
+
+        address_layout.addLayout(input_address_layout)
+        address_layout.addWidget(clear_address_button)
+
+        main_layout.addLayout(address_layout)
+        main_layout.addWidget(self.image)
+
         button_layout.addWidget(scheme_map_style_button)
         button_layout.addWidget(satellite_map_style_button)
         button_layout.addWidget(hybrid_map_style_button)
 
-        address_layout.addWidget(self.address_input)
-        address_layout.addWidget(search_button)
-
-        main_layout.addLayout(address_layout)
-        main_layout.addWidget(self.image)
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
@@ -70,9 +80,7 @@ class Widget(QWidget):
 
     def set_map_style(self):
         self.map_type = self.sender().objectName()
-    
         self.put_image_in_label()
-
         self.setFocus()
 
     def search_address(self):
@@ -82,6 +90,11 @@ class Widget(QWidget):
             self.api.set_address(address)
             self.put_image_in_label()
 
+        self.setFocus()
+
+    def clear_address(self):
+        self.api.clear_points()
+        self.put_image_in_label()
         self.setFocus()
 
     def keyPressEvent(self, event):

@@ -101,6 +101,9 @@ class API:
     def add_point(self, point):
         self.points.append(point)
 
+    def clear_points(self):
+        self.points.clear()
+
     def set_coordinates(self, coordinates: Tuple[float, ...]) -> None:
         self.coordinates = coordinates
         self.config_by_argument(self.COORDINATES_ARG)
@@ -109,7 +112,7 @@ class API:
         self.address = address
         self.coordinates = self.config_by_argument(self.ADDRESS_ARG)
 
-        self.points.clear()
+        self.clear_points()
         point_coordinates = self.return_coordinates()
         self.add_point(Point(point_coordinates))
 
@@ -117,7 +120,10 @@ class API:
         try:
             self.get_toponym_by_geocoder(address)
             return True
-        except Exception:
+        # catch Exception because self.get_toponym_by_geocoder raise
+        # Exception when requests is bad
+        except Exception as error:
+            print(error)
             return False
 
 
